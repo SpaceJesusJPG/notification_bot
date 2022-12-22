@@ -53,4 +53,3 @@ if __name__ == "__main__":
         else:
             logger.info('Mail receive. Critical voltage notification sent. Sleep 1 day.')
             tm.sleep(86400)
-            attention_sent = False
