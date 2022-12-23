@@ -3,7 +3,7 @@ from decimal import Decimal
 
 def remove_all_before(items, border):
     try:
-        return items[items.index(border) + 1:None:1]
+        return items[items.index(border) + 1 : None : 1]
     except ValueError:
         return items
 
@@ -26,5 +26,7 @@ def parse_message_list(msg_lst):
                     split_reading[2],
                     split_reading[10],
                 )
-                voltages.append([date, time, round(Decimal(voltage.replace(",", ".")), 2)])
+                voltages.append(
+                    [date, time, round(Decimal(voltage.replace(",", ".")), 2)]
+                )
     return voltages
