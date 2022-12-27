@@ -1,7 +1,5 @@
-import asyncio
-from decimal import Decimal
 import logging
-from httpx import AsyncClient
+from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
@@ -42,16 +40,16 @@ class ServiceUnavailable(Exception):
         self.message = message
 
 
-async def make_request(url: str, method: str, data: dict[str, Any] = None) -> Any:
-    retries = 0
-    while retries < 3:
-        retries += 1
-        async with AsyncClient() as client:
-            try:
-                response = await client.request(url=url, method=method, data=data)
-            except Exception as exc:
-                logger.error(f"Error: {type(exc)}: {exc}\nattempt: {retries}...")
-                await asyncio.sleep(5.0)
-            return response
-
-    raise ServiceUnavailable(f"{method.upper()} request failed")
+# async def make_request(url: str, method: str, data: dict[str, Any] = None) -> Any:
+#    retries = 0
+#    while retries < 3:
+#        retries += 1
+#        async with AsyncClient() as client:
+#            try:
+#                response = await client.request(url=url, method=method, data=data)
+#            except Exception as exc:
+#                logger.error(f"Error: {type(exc)}: {exc}\nattempt: {retries}...")
+#                await asyncio.sleep(5.0)
+#            return response
+#
+#    raise ServiceUnavailable(f"{method.upper()} request failed")
