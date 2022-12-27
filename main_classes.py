@@ -1,6 +1,7 @@
 import requests
 
 from mail_parser import get_most_recent_readings, lowest_reading, mail_receiver
+from helper_funcs import make_request
 
 CRITICAL_VALUE = {"1303": 11.3, "М-1": 11.0, "Е-1": 11.0}
 ATTENTION_VALUE = {"1303": 11.5, "М-1": 11.5, "Е-1": 11.5}
@@ -17,12 +18,12 @@ class MailReaderLoop:
         self.critical_sent = False
         self.lowest_most_recent = None
 
-    def __call__(self, logger):
+    async def __call__(self, logger):
         self.critical_sent = False
-        most_recent_readings = get_most_recent_readings(
+        most_recent_readings = await get_most_recent_readings(
             mail_receiver(self.user, self.password, self.imap_server)
         )
-        self.lowest_most_recent = lowest_reading(most_recent_readings)
+        self.lowest_most_recent = await lowest_reading(most_recent_readings)
         for facility, reading in self.lowest_most_recent.items():
             date, time, voltage = reading
             if voltage < CRITICAL_VALUE[facility]:
@@ -51,9 +52,10 @@ class PollCommandClass:
         self.offset = 0
         self.telegram_token = telegram_token
 
-    def __call__(self, lowest_most_recent):
-        response = requests.get(
-            f"https://api.telegram.org/bot{self.telegram_token}/getUpdates?offset={self.offset}"
+    async def __call__(self, lowest_most_recent):
+        response = await make_request(
+            url=f"https://api.telegram.org/bot{self.telegram_token}/getUpdates?timeout=60&offset={self.offset}?time",
+            method='GET'
         )
         result = response.json()["result"]
         if result:
