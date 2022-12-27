@@ -13,7 +13,8 @@ load_dotenv()
 USER = os.getenv("MAILBOX")
 PASSWORD = os.getenv("PASSWORD")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-CHAT_ID = os.getenv("CHAT_ID_1")
+CHAT_ID_1 = os.getenv("CHAT_ID_1")
+CHAT_ID_2 = os.getenv("CHAT_ID_2")
 IMAP_SERVER = "mail.emsd.ru"
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ logger.addHandler(handler)
 
 
 bot = Bot(TELEGRAM_TOKEN)
-loop = MailHandlerLoop(bot, logger, USER, PASSWORD, IMAP_SERVER, CHAT_ID)
+loop = MailHandlerLoop(bot, logger, USER, PASSWORD, IMAP_SERVER, [CHAT_ID_1, CHAT_ID_2])
 poll = PollCommandClass(bot, TELEGRAM_TOKEN)
 
 reader_thread = threading.Thread(target=loop.email_reader)

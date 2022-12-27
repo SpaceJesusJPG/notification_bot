@@ -4,17 +4,17 @@ import requests
 
 from mail_parser import get_most_recent_readings, lowest_reading, mail_receiver
 
-CRITICAL_VALUE = {"1303": 11.2, "М-1": 11.0, "Е-1": 11.0}
-ATTENTION_VALUE = {"1303": 11.5, "М-1": 11.5, "Е-1": 11.5}
+CRITICAL_VALUE = {"1303": 11.0, "М-1": 10.8, "Е-1": 11.0}
+ATTENTION_VALUE = {"1303": 11.2, "М-1": 11.2, "Е-1": 11.2}
 
 
 class MailHandlerLoop:
-    def __init__(self, bot, logger, user, password, imap_server, chat_id):
+    def __init__(self, bot, logger, user, password, imap_server, chat_ids):
         self.bot = bot
         self.user = user
         self.password = password
         self.imap_server = imap_server
-        self.chat_id = chat_id
+        self.chat_ids = chat_ids
         self.attention_sent = False
         self.critical_sent = False
         self.lowest_most_recent = None
@@ -22,14 +22,11 @@ class MailHandlerLoop:
 
     def email_reader(self):
         while True:
-            start = tm.time()
             most_recent_readings = get_most_recent_readings(
                 mail_receiver(self.user, self.password, self.imap_server)
             )
             self.lowest_most_recent = lowest_reading(most_recent_readings)
-            self.logger.info('Mail received.')
-            delay = tm.time() - start
-            tm.sleep(3600-delay)
+            tm.sleep(3600)
 
     def notification_sender(self):
         while True:
@@ -39,11 +36,13 @@ class MailHandlerLoop:
                 date, time, voltage = reading
                 if voltage < CRITICAL_VALUE[facility]:
                     message = f"CRITICAL на {facility} критический заряд {voltage}V на момент {date} {time}"
-                    self.bot.send_message(self.chat_id, message)
+                    for chat_id in self.chat_ids:
+                        self.bot.send_message(chat_id, message)
                     self.critical_sent = True
                 elif voltage < ATTENTION_VALUE[facility] and not self.attention_sent:
                     message = f"ATTENTION на {facility} заряд {voltage}V на момент {date} {time}"
-                    self.bot.send_message(self.chat_id, message)
+                    for chat_id in self.chat_ids:
+                        self.bot.send_message(chat_id, message)
                     self.logger.info("ATTENTION notification sent.")
                     self.attention_sent = True
             if not self.critical_sent:
