@@ -35,9 +35,17 @@ def parse_message_list(msg_lst):
     return voltages
 
 
-class ServiceUnavailable(Exception):
-    def __init__(self, message: str):
-        self.message = message
+#def check_response(response):
+#    result = response.json()["result"]
+#        if "message" in first_update:
+#            text = first_update["message"]["text"].split()
+#            chat_id = first_update["message"]["chat"]["id"]
+#            if "/voltage" in text:
+
+
+#class ServiceUnavailable(Exception):
+#    def __init__(self, message: str):
+#        self.message = message
 
 
 # async def make_request(url: str, method: str, data: dict[str, Any] = None) -> Any:

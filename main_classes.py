@@ -1,6 +1,7 @@
 import time as tm
 
 import requests
+from requests.exceptions import ConnectionError
 
 from mail_parser import get_most_recent_readings, lowest_reading, mail_receiver
 
@@ -22,15 +23,19 @@ class MailHandlerLoop:
 
     def email_reader(self):
         while True:
+            start = tm.time()
             most_recent_readings = get_most_recent_readings(
                 mail_receiver(self.user, self.password, self.imap_server)
             )
             self.lowest_most_recent = lowest_reading(most_recent_readings)
-            tm.sleep(3600)
+            self.logger.info('Mail received.')
+            delay = tm.time() - start
+            tm.sleep(3600-delay)
 
     def notification_sender(self):
         while True:
             tm.sleep(5)
+            start = tm.time()
             self.critical_sent = False
             for facility, reading in self.lowest_most_recent.items():
                 date, time, voltage = reading
@@ -47,13 +52,15 @@ class MailHandlerLoop:
                     self.attention_sent = True
             if not self.critical_sent:
                 self.logger.info("No critical voltages. Sleep 1 hour.")
-                tm.sleep(3595)
+                delay = tm.time() - start
+                tm.sleep(3595-delay)
             else:
                 self.logger.info(
                     "Critical voltage notification sent. Sleep 1 day."
                 )
                 self.attention_sent = False
-                tm.sleep(86395)
+                delay = tm.time() - start
+                tm.sleep(86395-delay)
 
 
 class PollCommandClass:
@@ -64,23 +71,26 @@ class PollCommandClass:
 
     def __call__(self, loop):
         while True:
-            response = requests.get(
-                f"https://api.telegram.org/bot{self.telegram_token}/getUpdates?timeout=60&offset={self.offset}?time"
-            )
-            result = response.json()["result"]
-            if result:
-                first_update = result[0]
-                self.offset = first_update["update_id"] + 1
-                if "message" in first_update:
-                    text = first_update["message"]["text"].split()
-                    chat_id = first_update["message"]["chat"]["id"]
-                    if "/voltage" in text:
-                        message = ""
-                        if loop.lowest_most_recent:
-                            lowest_most_recent = loop.lowest_most_recent
-                            for facility in lowest_most_recent:
-                                date, time, voltage = lowest_most_recent[facility]
-                                message += f"{facility}: {date}, {time}, {voltage}\n"
-                            self.bot.send_message(chat_id, message)
-                        else:
-                            self.bot.send_message(chat_id, 'За последний час нету данных.')
+            try:
+                response = requests.get(
+                    f"https://api.telegram.org/bot{self.telegram_token}/getUpdates?timeout=60&offset={self.offset}?time"
+                )
+                result = response.json()["result"]
+                if result:
+                    first_update = result[0]
+                    self.offset = first_update["update_id"] + 1
+                    if "message" in first_update:
+                        text = first_update["message"]["text"].split()
+                        chat_id = first_update["message"]["chat"]["id"]
+                        if "/voltage" in text:
+                            message = ""
+                            if loop.lowest_most_recent:
+                                lowest_most_recent = loop.lowest_most_recent
+                                for facility in lowest_most_recent:
+                                    date, time, voltage = lowest_most_recent[facility]
+                                    message += f"{facility}: {date}, {time}, {voltage}\n"
+                                self.bot.send_message(chat_id, message)
+                            else:
+                                self.bot.send_message(chat_id, 'За последний час нету данных.')
+            except (ConnectionError, KeyError):
+                tm.sleep(60)
