@@ -18,20 +18,20 @@ def read_message(msg):
             return result
 
 
-def parse_message_list(msg_lst):
+def parse_message_list(msg):
     voltages = []
-    for msg in msg_lst:
-        for reading in read_message(msg):
-            if reading:
-                split_reading = reading.split()
-                date, time, voltage = (
-                    split_reading[1],
-                    split_reading[2],
-                    split_reading[10],
-                )
-                voltages.append(
-                    [date, time, round(Decimal(voltage.replace(",", ".")), 2)]
-                )
+    for reading in read_message(msg):
+        if reading:
+            split_reading = reading.split()
+            date, time, voltage = (
+                split_reading[1],
+                split_reading[2],
+                split_reading[10],
+            )
+            voltages.append(
+                [date, time, round(Decimal(voltage.replace(",", ".")), 2)]
+            )
+
     return voltages
 
 

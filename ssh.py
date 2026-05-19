@@ -34,3 +34,9 @@ class SshHandler:
             for i in status.split(b"\n")[:-1]
         }
         return status_decoded, last_data.decode().strip()
+
+    def get_data_vp(self, date, start_time):
+        {"ard": []}
+        for i in ("ard", "adc"):
+            expression = f"tac {i}_data_{date}.txt | sed -n '/{start_time}/q;p' | tac"
+            self.client.exec_command(expression)[1].read()

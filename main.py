@@ -15,11 +15,12 @@ USER = os.getenv("MAILBOX")
 PASSWORD = os.getenv("PASSWORD")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID_1 = os.getenv("CHAT_ID_1")
-# CHAT_ID_2 = os.getenv("CHAT_ID_2")
-# CHAT_ID_3 = os.getenv("CHAT_ID_3")
+CHAT_ID_2 = os.getenv("CHAT_ID_2")
+CHAT_ID_3 = os.getenv("CHAT_ID_3")
 # CHAT_ID_4 = os.getenv("CHAT_ID_4")
 IMAP_SERVER = "mail.emsd.ru"
 HOST_1303 = ("83.149.54.131", "rgdn", "para", "1303")
+HOST_VP = ("31.173.224.101", "paratunka", "paratunka", "VP")
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -31,11 +32,12 @@ logger.addHandler(handler)
 
 bot = Bot(TELEGRAM_TOKEN)
 loop = MailHandlerLoop(
-    bot, logger, USER, PASSWORD, IMAP_SERVER, [CHAT_ID_1]
+    bot, logger, USER, PASSWORD, IMAP_SERVER, [CHAT_ID_1, CHAT_ID_2, CHAT_ID_3]
 )  # ДОБАВЬ ОСТАЛЬНЫЕ ПОТОМ!!!
 poll = PollCommandClass(bot, TELEGRAM_TOKEN)
 handlers = {
     "1303": SshHandler(HOST_1303),
+    "VP": SshHandler(HOST_VP)
 }
 
 reader_thread = threading.Thread(target=loop.email_reader)
